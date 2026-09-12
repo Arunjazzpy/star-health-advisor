@@ -1,0 +1,384 @@
+/* ============================================================
+   ANIMATIONS — Keyframes, Scroll Reveals, Transitions
+   ============================================================
+   Premium, restrained animations that communicate quality.
+   All animations respect prefers-reduced-motion (handled in base.css).
+   ============================================================ */
+
+/* ── Keyframes ────────────────────────────────────────────── */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInRight {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes progressFill {
+  from {
+    width: 0%;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes checkmark {
+  0% {
+    stroke-dashoffset: 24;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+
+/* ── Scroll Reveal Classes ────────────────────────────────── */
+/* Elements with .animate-on-scroll start hidden and reveal
+   when the Intersection Observer adds .is-visible           */
+
+.animate-on-scroll {
+  opacity: 0;
+  transition: opacity var(--duration-slower) var(--ease-out),
+              transform var(--duration-slower) var(--ease-out);
+  will-change: opacity, transform;
+}
+
+.animate-on-scroll.fade-in {
+  /* Just opacity (default) */
+}
+
+.animate-on-scroll.slide-up {
+  transform: translateY(30px);
+}
+
+.animate-on-scroll.slide-left {
+  transform: translateX(30px);
+}
+
+.animate-on-scroll.slide-right {
+  transform: translateX(-30px);
+}
+
+.animate-on-scroll.scale-in {
+  transform: scale(0.95);
+}
+
+/* Visible state */
+.animate-on-scroll.is-visible {
+  opacity: 1;
+  transform: translateY(0) translateX(0) scale(1);
+}
+
+/* Stagger delays for lists/grids */
+.animate-on-scroll.stagger-1 { transition-delay: 100ms; }
+.animate-on-scroll.stagger-2 { transition-delay: 200ms; }
+.animate-on-scroll.stagger-3 { transition-delay: 300ms; }
+.animate-on-scroll.stagger-4 { transition-delay: 400ms; }
+.animate-on-scroll.stagger-5 { transition-delay: 500ms; }
+.animate-on-scroll.stagger-6 { transition-delay: 600ms; }
+
+
+/* ── Hero Entrance ────────────────────────────────────────── */
+
+.hero-animate {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp var(--duration-hero) var(--ease-out) forwards;
+}
+
+.hero-animate-1 { animation-delay: 100ms; }
+.hero-animate-2 { animation-delay: 250ms; }
+.hero-animate-3 { animation-delay: 400ms; }
+.hero-animate-4 { animation-delay: 550ms; }
+.hero-animate-5 { animation-delay: 700ms; }
+
+
+/* ── Page Transitions ─────────────────────────────────────── */
+
+.page-enter {
+  animation: fadeIn var(--duration-slow) var(--ease-out);
+}
+
+.page-exit {
+  animation: fadeIn var(--duration-fast) var(--ease-out) reverse;
+}
+
+
+/* ── Modal Transitions ────────────────────────────────────── */
+
+.modal-overlay-enter {
+  animation: fadeIn var(--duration-base) var(--ease-out);
+}
+
+.modal-content-enter {
+  animation: scaleIn var(--duration-slow) var(--ease-spring);
+}
+
+.modal-overlay-exit {
+  animation: fadeIn var(--duration-fast) var(--ease-out) reverse forwards;
+}
+
+.modal-content-exit {
+  animation: scaleIn var(--duration-fast) var(--ease-out) reverse forwards;
+}
+
+
+/* ── Accordion Transition ─────────────────────────────────── */
+
+.accordion-content {
+  overflow: hidden;
+  transition: max-height var(--duration-slow) var(--ease-out),
+              opacity var(--duration-base) var(--ease-out),
+              padding var(--duration-slow) var(--ease-out);
+}
+
+
+/* ── Button Micro-interactions ────────────────────────────── */
+
+.btn-hover-lift {
+  transition: transform var(--duration-fast) var(--ease-out),
+              box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.btn-hover-lift:hover {
+  transform: translateY(-2px);
+}
+
+.btn-hover-lift:active {
+  transform: translateY(0);
+}
+
+
+/* ── Card Hover ───────────────────────────────────────────── */
+
+.card-hover {
+  transition: transform var(--duration-base) var(--ease-out),
+              box-shadow var(--duration-base) var(--ease-out),
+              border-color var(--duration-base) var(--ease-out);
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+
+/* ── Arrow Animation (CTA buttons) ────────────────────────── */
+
+.arrow-animate {
+  display: inline-flex;
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+
+.btn:hover .arrow-animate,
+a:hover .arrow-animate {
+  transform: translateX(4px);
+}
+
+
+/* ── Progress Bar ─────────────────────────────────────────── */
+
+.progress-animate {
+  animation: progressFill var(--duration-slow) var(--ease-out);
+}
+
+
+/* ── Loading / Skeleton ───────────────────────────────────── */
+
+.skeleton {
+  background: linear-gradient(90deg,
+    var(--color-bg-subtle) 25%,
+    var(--color-border) 50%,
+    var(--color-bg-subtle) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-md);
+}
+
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+
+/* ── Floating Element ─────────────────────────────────────── */
+
+.float-animation {
+  animation: float 3s ease-in-out infinite;
+}
+
+
+/* ── Step Transition (Find My Plan) ───────────────────────── */
+
+.step-enter {
+  animation: fadeInRight var(--duration-slow) var(--ease-out);
+}
+
+.step-exit {
+  animation: fadeInLeft var(--duration-fast) var(--ease-out) reverse forwards;
+}
+
+.step-enter-back {
+  animation: fadeInLeft var(--duration-slow) var(--ease-out);
+}
+
+
+/* ── Toast Notification ───────────────────────────────────── */
+
+.toast-enter {
+  animation: fadeInUp var(--duration-base) var(--ease-spring);
+}
+
+.toast-exit {
+  animation: fadeInUp var(--duration-fast) var(--ease-out) reverse forwards;
+}
+
+
+/* ── Tooltip ──────────────────────────────────────────────── */
+
+.tooltip-enter {
+  animation: scaleIn var(--duration-fast) var(--ease-out);
+}
+
+
+/* ── Count Up (number animation) ──────────────────────────── */
+
+.count-up {
+  display: inline-block;
+  tabular-nums: true;
+  font-variant-numeric: tabular-nums;
+}
+
+
+/* ── Subtle Background Movement ───────────────────────────── */
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.gradient-animate {
+  background-size: 200% 200%;
+  animation: gradientShift 8s ease-in-out infinite;
+}
