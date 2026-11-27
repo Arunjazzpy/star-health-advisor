@@ -402,6 +402,33 @@
   padding-right: var(--space-10);
 }
 
+select option,
+.form-select option {
+  color: #0F172A !important;
+  background-color: #FFFFFF !important;
+  padding: 10px;
+  font-size: 15px;
+}
+
+.step-card-wrapper {
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: block !important;
+  width: 100%;
+  animation: stepFadeIn 0.25s ease-out;
+}
+
+@keyframes stepFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .form-error {
   display: flex;
   align-items: center;
