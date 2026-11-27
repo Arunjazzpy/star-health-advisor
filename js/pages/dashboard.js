@@ -2,6 +2,7 @@ import { icons } from '../utils/icons.js';
 import { State } from '../state.js';
 import { Router } from '../router.js';
 import { plans } from '../data/plans.js';
+import { fetchLeadsFromBackend, updateLeadStatusInBackend, deleteLeadInBackend } from '../utils/api.js';
 
 export function render(params) {
   if (!State.isLoggedIn()) {
@@ -44,6 +45,9 @@ export function render(params) {
               </button>
               <button class="nav-item" data-section="enquiries" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; border-radius: 8px; border: none; background: transparent; text-align: left; cursor: pointer; color: var(--color-text-secondary); transition: all 0.2s;">
                 ${icons.messageCircle} My Enquiries
+              </button>
+              <button class="nav-item" data-section="leads" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; border-radius: 8px; border: none; background: transparent; text-align: left; cursor: pointer; color: var(--color-text-secondary); transition: all 0.2s;">
+                ${icons.fileText || icons.messageCircle} MySQL Leads
               </button>
               <button class="nav-item" data-section="contact" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; border-radius: 8px; border: none; background: transparent; text-align: left; cursor: pointer; color: var(--color-text-secondary); transition: all 0.2s;">
                 ${icons.phone} Contact Advisor
@@ -96,6 +100,15 @@ export function render(params) {
             <section id="section-enquiries" class="content-section" style="display: none;">
                <h2 style="font-size: 1.5rem; color: var(--color-navy); border-bottom: 1px solid var(--color-border); padding-bottom: 1rem; margin-bottom: 1.5rem;">My Enquiries</h2>
                <div id="enquiriesContainer"></div>
+            </section>
+
+            <!-- MySQL Leads Section -->
+            <section id="section-leads" class="content-section" style="display: none;">
+               <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--color-border); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+                 <h2 style="font-size: 1.5rem; color: var(--color-navy); margin: 0;">MySQL Leads</h2>
+                 <button type="button" id="btnRefreshLeads" class="btn btn-outline btn-sm">Refresh</button>
+               </div>
+               <div id="leadsContainer"></div>
             </section>
 
             <!-- Contact Section -->
@@ -196,6 +209,150 @@ export function mount(params) {
     html += '</div>';
     enquiriesContainer.innerHTML = html;
   }
+
+  // Load MySQL Leads (Admin-protected)
+  const ADMIN_KEY_STORAGE = 'star_health_admin_key';
+  const leadsContainer = document.getElementById('leadsContainer');
+  const btnRefreshLeads = document.getElementById('btnRefreshLeads');
+  const esc = (str) => String(str ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  function renderAdminUnlockForm(errorMsg = '') {
+    if (!leadsContainer) return;
+    leadsContainer.innerHTML = `
+      <form id="adminUnlockForm" style="max-width: 380px; margin: 2rem auto; padding: 1.5rem; border: 1px solid var(--color-border); border-radius: 10px; background: var(--color-bg);">
+        <div style="font-weight: 600; color: var(--color-navy); margin-bottom: 0.5rem;">Advisor Access Only</div>
+        <p style="font-size: 0.9rem; color: var(--color-text-secondary); margin-bottom: 1rem;">Enter your advisor admin password to view MySQL leads.</p>
+        ${errorMsg ? `<div style="color: #B91C1C; font-size: 0.85rem; margin-bottom: 0.75rem;">${esc(errorMsg)}</div>` : ''}
+        <input type="password" id="adminKeyInput" class="form-input" placeholder="Admin password" required style="width: 100%; margin-bottom: 0.75rem; padding: 0.65rem; border: 1px solid var(--color-border); border-radius: 6px;">
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Unlock Leads</button>
+      </form>
+    `;
+    const unlockForm = document.getElementById('adminUnlockForm');
+    if (unlockForm) {
+      unlockForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const val = document.getElementById('adminKeyInput')?.value || '';
+        sessionStorage.setItem(ADMIN_KEY_STORAGE, val);
+        loadMySQLLeads();
+      });
+    }
+  }
+
+  async function loadMySQLLeads() {
+    if (!leadsContainer) return;
+    const adminKey = sessionStorage.getItem(ADMIN_KEY_STORAGE) || '';
+    if (!adminKey) {
+      renderAdminUnlockForm();
+      return;
+    }
+
+    leadsContainer.innerHTML = `<p style="color: var(--color-text-secondary);">Loading leads from MySQL backend...</p>`;
+    const res = await fetchLeadsFromBackend(adminKey);
+
+    if (res.unauthorized) {
+      sessionStorage.removeItem(ADMIN_KEY_STORAGE);
+      renderAdminUnlockForm('Incorrect admin password. Please try again.');
+      return;
+    }
+
+    if (!res.ok) {
+      leadsContainer.innerHTML = `
+        <div style="padding: 1.5rem; border: 1px solid #FECACA; background: #FEF2F2; border-radius: 8px; color: #991B1B;">
+          <div style="font-weight: 600; margin-bottom: 0.5rem;">Backend server is not reachable</div>
+          <div style="font-size: 0.9rem;">Make sure your Spring Boot app is running in Eclipse on <code>http://localhost:8080</code>.</div>
+        </div>
+      `;
+      return;
+    }
+
+    if (res.leads.length === 0) {
+      leadsContainer.innerHTML = `
+        <div style="text-align: center; padding: 3rem 1rem; color: var(--color-text-secondary);">
+          <p>No leads in MySQL yet.</p>
+          <a href="#/get-guidance" class="btn btn-outline mt-4">Submit a Test Lead</a>
+        </div>
+      `;
+      return;
+    }
+
+    leadsContainer.innerHTML = `
+      <div style="display: flex; justify-content: flex-end; margin-bottom: 0.75rem;">
+        <button type="button" id="btnLockLeads" class="btn btn-outline btn-sm">Lock Leads</button>
+      </div>
+      <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+          <thead>
+            <tr style="border-bottom: 2px solid var(--color-border); text-align: left; color: var(--color-navy);">
+              <th style="padding: 0.75rem 0.5rem;">Name</th>
+              <th style="padding: 0.75rem 0.5rem;">Contact</th>
+              <th style="padding: 0.75rem 0.5rem;">Plan / Coverage</th>
+              <th style="padding: 0.75rem 0.5rem;">Budget</th>
+              <th style="padding: 0.75rem 0.5rem;">Status</th>
+              <th style="padding: 0.75rem 0.5rem;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${res.leads.map(lead => `
+              <tr style="border-bottom: 1px solid var(--color-border);">
+                <td style="padding: 0.75rem 0.5rem;">
+                  <div style="font-weight: 600; color: var(--color-navy);">${esc(lead.name)}</div>
+                  <div style="color: var(--color-text-secondary); font-size: 0.8rem;">${esc(lead.location || '—')}</div>
+                </td>
+                <td style="padding: 0.75rem 0.5rem;">
+                  <div>${esc(lead.mobile)}</div>
+                  <div style="color: var(--color-text-secondary); font-size: 0.8rem;">${esc(lead.email)}</div>
+                </td>
+                <td style="padding: 0.75rem 0.5rem;">
+                  <div>${esc(lead.planInterest || 'General')}</div>
+                  <div style="color: var(--color-text-secondary); font-size: 0.8rem;">${esc(lead.coverageFor || '')}${lead.familySize ? ` (${esc(lead.familySize)})` : ''}</div>
+                </td>
+                <td style="padding: 0.75rem 0.5rem;">${esc(lead.budget || '—')}</td>
+                <td style="padding: 0.75rem 0.5rem;">
+                  <select class="lead-status-select" data-id="${lead.id}" style="padding: 0.35rem 0.5rem; border: 1px solid var(--color-border); border-radius: 6px; background: #fff; color: var(--color-navy);">
+                    <option value="NEW" ${lead.status === 'NEW' ? 'selected' : ''}>NEW</option>
+                    <option value="CONTACTED" ${lead.status === 'CONTACTED' ? 'selected' : ''}>CONTACTED</option>
+                    <option value="CONVERTED" ${lead.status === 'CONVERTED' ? 'selected' : ''}>CONVERTED</option>
+                  </select>
+                </td>
+                <td style="padding: 0.75rem 0.5rem;">
+                  <button type="button" class="btn-delete-lead" data-id="${lead.id}" style="background: transparent; border: none; color: #EF4444; cursor: pointer; font-weight: 600;">Delete</button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+
+    const btnLock = document.getElementById('btnLockLeads');
+    if (btnLock) {
+      btnLock.addEventListener('click', () => {
+        sessionStorage.removeItem(ADMIN_KEY_STORAGE);
+        renderAdminUnlockForm();
+      });
+    }
+
+    leadsContainer.querySelectorAll('.lead-status-select').forEach(sel => {
+      sel.addEventListener('change', async (e) => {
+        const id = e.target.dataset.id;
+        await updateLeadStatusInBackend(id, e.target.value, adminKey);
+      });
+    });
+
+    leadsContainer.querySelectorAll('.btn-delete-lead').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const id = e.currentTarget.dataset.id;
+        if (await deleteLeadInBackend(id, adminKey)) {
+          loadMySQLLeads();
+        }
+      });
+    });
+  }
+
+  if (btnRefreshLeads) {
+    btnRefreshLeads.addEventListener('click', loadMySQLLeads);
+  }
+  loadMySQLLeads();
 
   // Navigation Logic
   navItems.forEach(item => {
