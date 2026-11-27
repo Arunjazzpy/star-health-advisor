@@ -17,9 +17,9 @@ let navbarModule, footerModule, whatsappModule;
 async function initShell() {
   // Load shell components
   const [navbar, footer, whatsapp] = await Promise.all([
-    import('./components/navbar.js?v=1.3'),
-    import('./components/footer.js?v=1.3'),
-    import('./components/whatsapp-cta.js?v=1.3')
+    import('./components/navbar.js?v=2.0'),
+    import('./components/footer.js?v=2.0'),
+    import('./components/whatsapp-cta.js?v=2.0')
   ]);
 
   navbarModule = navbar;
@@ -50,62 +50,62 @@ async function initShell() {
 // Pages are lazy-loaded for performance
 
 Router.register('/', async () => {
-  const module = await import('./pages/home.js?v=1.3');
+  const module = await import('./pages/home.js?v=2.0');
   return module;
 });
 
 Router.register('/plans', async () => {
-  const module = await import('./pages/plans.js?v=1.3');
+  const module = await import('./pages/plans.js?v=2.0');
   return module;
 });
 
 Router.register('/plans/:slug', async (params) => {
-  const module = await import('./pages/plan-detail.js?v=1.3');
+  const module = await import('./pages/plan-detail.js?v=2.0');
   return module;
 });
 
 Router.register('/plan/:slug', async (params) => {
-  const module = await import('./pages/plan-detail.js?v=1.3');
+  const module = await import('./pages/plan-detail.js?v=2.0');
   return module;
 });
 
 Router.register('/find-my-plan', async () => {
-  const module = await import('./pages/find-my-plan.js?v=1.3');
+  const module = await import('./pages/find-my-plan.js?v=2.0');
   return module;
 });
 
 Router.register('/get-guidance', async () => {
-  const module = await import('./pages/get-guidance.js?v=1.3');
+  const module = await import('./pages/get-guidance.js?v=2.0');
   return module;
 });
 
 Router.register('/contact', async () => {
-  const module = await import('./pages/contact.js?v=1.3');
+  const module = await import('./pages/contact.js?v=2.0');
   return module;
 });
 
 Router.register('/about', async () => {
-  const module = await import('./pages/about.js?v=1.3');
+  const module = await import('./pages/about.js?v=2.0');
   return module;
 });
 
 Router.register('/faq', async () => {
-  const module = await import('./pages/faq.js?v=1.3');
+  const module = await import('./pages/faq.js?v=2.0');
   return module;
 });
 
 Router.register('/dashboard', async () => {
-  const module = await import('./pages/dashboard.js?v=1.3');
+  const module = await import('./pages/dashboard.js?v=2.0');
   return module;
 });
 
 Router.register('/privacy', async () => {
-  const module = await import('./pages/privacy.js?v=1.3');
+  const module = await import('./pages/privacy.js?v=2.0');
   return module;
 });
 
 Router.register('/terms', async () => {
-  const module = await import('./pages/terms.js?v=1.3');
+  const module = await import('./pages/terms.js?v=2.0');
   return module;
 });
 
