@@ -153,7 +153,11 @@ export const Router = {
         if (pageModule.mount) {
           // Small delay to allow DOM to render
           requestAnimationFrame(() => {
-            pageModule.mount(match.params);
+            try {
+              pageModule.mount(match.params);
+            } catch (mountErr) {
+              console.warn('Page mount error:', mountErr);
+            }
             
             // Initialize scroll animations
             if (window.initScrollAnimations) {
@@ -165,23 +169,38 @@ export const Router = {
 
       // Run after hooks
       for (const hook of this.afterHooks) {
-        hook(path, match.params);
+        try {
+          hook(path, match.params);
+        } catch (hErr) {
+          console.warn('After hook error:', hErr);
+        }
       }
     } catch (error) {
       console.error('Error rendering page:', error);
       const container = document.getElementById('page-content');
       if (container) {
+        // If find-my-plan failed, fall back smoothly to get-guidance
+        if (path.includes('find-my-plan')) {
+          try {
+            const fallbackModule = await import('./pages/get-guidance.js');
+            this.currentRoute = fallbackModule;
+            container.innerHTML = fallbackModule.render(match.params);
+            if (fallbackModule.mount) fallbackModule.mount(match.params);
+            return;
+          } catch (e2) {
+            console.error('Fallback guidance load error:', e2);
+          }
+        }
+        
         container.innerHTML = `
           <div class="page" style="display:flex;align-items:center;justify-content:center;min-height:60vh;">
-            <div class="empty-state">
-              <div class="empty-state__icon">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/>
-                </svg>
+            <div class="empty-state text-center p-8">
+              <h3 class="empty-state__title text-2xl font-bold mb-2" style="color: #0F172A;">Something went wrong</h3>
+              <p class="empty-state__desc text-gray-600 mb-6" style="color: #64748B;">Please try refreshing or restarting your selection.</p>
+              <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+                <button class="btn btn-primary" onclick="localStorage.clear();location.hash='/get-guidance'">Get Personalised Guidance</button>
+                <button class="btn btn-outline" onclick="location.hash='/'">Back to Home</button>
               </div>
-              <h3 class="empty-state__title">Something went wrong</h3>
-              <p class="empty-state__desc">Please try refreshing the page.</p>
-              <button class="btn btn-primary" onclick="location.hash='/'">Back to Home</button>
             </div>
           </div>
         `;
