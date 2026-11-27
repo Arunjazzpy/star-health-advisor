@@ -14,9 +14,16 @@ export function isValidEmail(email) {
  * Validate Indian mobile number
  */
 export function isValidPhone(phone) {
-  const cleaned = phone.replace(/[\s\-\+]/g, '');
-  // Indian mobile: 10 digits starting with 6-9, optionally prefixed with 91
-  return /^(91)?[6-9]\d{9}$/.test(cleaned);
+  if (!phone) return false;
+  // Clean all non-digit characters and leading zeros or +91
+  let cleaned = phone.replace(/\D/g, '');
+  if (cleaned.startsWith('91') && cleaned.length > 10) {
+    cleaned = cleaned.slice(2);
+  }
+  if (cleaned.startsWith('0')) {
+    cleaned = cleaned.replace(/^0+/, '');
+  }
+  return /^[6-9]\d{9}$/.test(cleaned);
 }
 
 /**
@@ -37,10 +44,12 @@ export function isValidAge(age) {
 }
 
 /**
- * Validate name (letters, spaces, 2-50 chars)
+ * Validate name (letters, dots, hyphens, spaces, 2-60 chars)
  */
 export function isValidName(name) {
-  return /^[a-zA-Z\s]{2,50}$/.test(name.trim());
+  if (!name) return false;
+  const trimmed = name.trim();
+  return trimmed.length >= 2 && trimmed.length <= 60;
 }
 
 /**
