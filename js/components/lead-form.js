@@ -1,5 +1,6 @@
 import { State } from '../state.js';
 import { plans } from '../data/plans.js';
+import { sendLeadToGoogleSheet } from '../utils/sheets.js';
 
 export function LeadForm(options = {}) {
   const planOptions = (plans || []).map(p => `<option value="${p.slug}">${p.name}</option>`).join('');
@@ -113,12 +114,13 @@ export function initLeadForm() {
     const data = Object.fromEntries(formData.entries());
     data.date = new Date().toISOString();
     
-    // Save to State (ensure method exists)
+    // Save to State
     if (State.addEnquiry) {
       State.addEnquiry(data);
-    } else {
-      console.log('Enquiry captured:', data);
     }
+    
+    // Send to Google Sheet
+    sendLeadToGoogleSheet(data);
 
     step2.style.display = 'none';
     stepSuccess.style.display = 'block';
