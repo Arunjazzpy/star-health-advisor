@@ -1,6 +1,7 @@
 import { State } from '../state.js';
 import { plans } from '../data/plans.js';
 import { sendLeadToGoogleSheet } from '../utils/sheets.js';
+import { sendLeadToBackend } from '../utils/api.js';
 
 export function LeadForm(options = {}) {
   const planOptions = (plans || []).map(p => `<option value="${p.slug}">${p.name}</option>`).join('');
@@ -119,8 +120,9 @@ export function initLeadForm() {
       State.addEnquiry(data);
     }
     
-    // Send to Google Sheet
+    // Send to Google Sheet & MySQL Backend
     sendLeadToGoogleSheet(data);
+    sendLeadToBackend(data);
 
     step2.style.display = 'none';
     stepSuccess.style.display = 'block';
