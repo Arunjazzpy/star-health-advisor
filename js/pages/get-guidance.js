@@ -3,6 +3,7 @@ import { plans } from '../data/plans.js';
 import { State } from '../state.js';
 import { Router } from '../router.js';
 import { isValidEmail, isValidPhone, isRequired, isValidName, showFieldError, clearFieldError, clearAllErrors } from '../utils/validation.js';
+import { sendLeadToGoogleSheet } from '../utils/sheets.js';
 
 let currentStep = 1;
 const totalSteps = 3;
@@ -30,7 +31,7 @@ export function render(params) {
         <div class="guidance-page__form card guidance-page__card p-8 shadow-md" style="background: var(--color-white); border-radius: 12px; padding: 2rem;">
           <form id="guidanceForm">
             <!-- Step 1: Personal Info -->
-            <div id="step-1" class="form-step active-step">
+            <div id="step-1" class="form-step" style="display: block;">
               <h2 style="font-size: 1.5rem; margin-bottom: 1.5rem; color: var(--color-navy);">Personal Information</h2>
               
               <div class="form-group mb-4">
@@ -62,67 +63,67 @@ export function render(params) {
             </div>
 
             <!-- Step 2: Requirements -->
-            <div id="step-2" class="form-step hidden" style="display: none;">
+            <div id="step-2" class="form-step" style="display: none;">
               <h2 style="font-size: 1.5rem; margin-bottom: 1.5rem; color: var(--color-navy);">Your Requirements</h2>
               
               <div class="form-group mb-4">
-                <label class="form-label" for="planInterest">Plan interested in</label>
-                <select id="planInterest" name="planInterest" class="form-select w-full p-3 border rounded">
-                  <option value="">Select a plan (optional)</option>
+                <label class="form-label" for="planInterest" style="font-weight: 600; color: #0F172A; display: block; margin-bottom: 0.5rem;">Plan interested in</label>
+                <select id="planInterest" name="planInterest" class="form-select w-full p-3 border rounded" style="color: #0F172A; background-color: #FFFFFF; border-color: #CBD5E1;">
+                  <option value="" style="color: #0F172A; background-color: #FFFFFF;">Select a plan (optional)</option>
                   ${planOptions}
                 </select>
               </div>
 
               <div class="grid grid-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                 <div class="form-group">
-                  <label class="form-label" for="coverageFor">Who needs coverage?</label>
-                  <select id="coverageFor" name="coverageFor" class="form-select w-full p-3 border rounded">
-                    <option value="Self">Self</option>
-                    <option value="Family">Family</option>
-                    <option value="Parents">Parents</option>
-                    <option value="Other">Other</option>
+                  <label class="form-label" for="coverageFor" style="font-weight: 600; color: #0F172A; display: block; margin-bottom: 0.5rem;">Who needs coverage?</label>
+                  <select id="coverageFor" name="coverageFor" class="form-select w-full p-3 border rounded" style="color: #0F172A; background-color: #FFFFFF; border-color: #CBD5E1;">
+                    <option value="Self" style="color: #0F172A; background-color: #FFFFFF;">Self</option>
+                    <option value="Family" style="color: #0F172A; background-color: #FFFFFF;">Family</option>
+                    <option value="Parents" style="color: #0F172A; background-color: #FFFFFF;">Parents</option>
+                    <option value="Other" style="color: #0F172A; background-color: #FFFFFF;">Other</option>
                   </select>
                 </div>
                 
                 <div class="form-group">
-                  <label class="form-label" for="familySize">Number of members</label>
-                  <input type="number" id="familySize" name="familySize" class="form-input w-full p-3 border rounded" min="1" value="1">
+                  <label class="form-label" for="familySize" style="font-weight: 600; color: #0F172A; display: block; margin-bottom: 0.5rem;">Number of members</label>
+                  <input type="number" id="familySize" name="familySize" class="form-input w-full p-3 border rounded" min="1" value="1" style="color: #0F172A; background-color: #FFFFFF; border-color: #CBD5E1;">
                 </div>
               </div>
 
               <div class="form-group mb-4">
-                <label class="form-label" for="budget">Approximate Budget (Annual)</label>
-                <select id="budget" name="budget" class="form-select w-full p-3 border rounded">
-                  <option value="Under ₹10,000">Under ₹10,000</option>
-                  <option value="₹10,000-25,000">₹10,000 - ₹25,000</option>
-                  <option value="₹25,000-50,000">₹25,000 - ₹50,000</option>
-                  <option value="Above ₹50,000">Above ₹50,000</option>
-                  <option value="Not sure">Not sure</option>
+                <label class="form-label" for="budget" style="font-weight: 600; color: #0F172A; display: block; margin-bottom: 0.5rem;">Approximate Budget (Annual)</label>
+                <select id="budget" name="budget" class="form-select w-full p-3 border rounded" style="color: #0F172A; background-color: #FFFFFF; border-color: #CBD5E1;">
+                  <option value="Under ₹10,000" style="color: #0F172A; background-color: #FFFFFF;">Under ₹10,000</option>
+                  <option value="₹10,000-25,000" style="color: #0F172A; background-color: #FFFFFF;">₹10,000 - ₹25,000</option>
+                  <option value="₹25,000-50,000" style="color: #0F172A; background-color: #FFFFFF;">₹25,000 - ₹50,000</option>
+                  <option value="Above ₹50,000" style="color: #0F172A; background-color: #FFFFFF;">Above ₹50,000</option>
+                  <option value="Not sure" style="color: #0F172A; background-color: #FFFFFF;">Not sure</option>
                 </select>
               </div>
 
               <div class="form-group mb-4">
-                <label class="form-label block mb-2">Preferred contact method</label>
-                <div style="display: flex; gap: 1.5rem;">
-                  <label><input type="radio" name="contactMethod" value="Call" checked> Call</label>
-                  <label><input type="radio" name="contactMethod" value="WhatsApp"> WhatsApp</label>
-                  <label><input type="radio" name="contactMethod" value="Email"> Email</label>
+                <label class="form-label block mb-2" style="font-weight: 600; color: #0F172A; display: block; margin-bottom: 0.5rem;">Preferred contact method</label>
+                <div style="display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap;">
+                  <label style="display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer; color: #0F172A; font-weight: 500;"><input type="radio" name="contactMethod" value="Call" checked style="accent-color: var(--color-primary); width: 18px; height: 18px;"> Call</label>
+                  <label style="display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer; color: #0F172A; font-weight: 500;"><input type="radio" name="contactMethod" value="WhatsApp" style="accent-color: var(--color-primary); width: 18px; height: 18px;"> WhatsApp</label>
+                  <label style="display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer; color: #0F172A; font-weight: 500;"><input type="radio" name="contactMethod" value="Email" style="accent-color: var(--color-primary); width: 18px; height: 18px;"> Email</label>
                 </div>
               </div>
 
               <div class="form-group mb-4">
-                <label class="form-label" for="contactTime">Preferred contact time</label>
-                <select id="contactTime" name="contactTime" class="form-select w-full p-3 border rounded">
-                  <option value="Morning">Morning</option>
-                  <option value="Afternoon">Afternoon</option>
-                  <option value="Evening">Evening</option>
-                  <option value="Anytime">Anytime</option>
+                <label class="form-label" for="contactTime" style="font-weight: 600; color: #0F172A; display: block; margin-bottom: 0.5rem;">Preferred contact time</label>
+                <select id="contactTime" name="contactTime" class="form-select w-full p-3 border rounded" style="color: #0F172A; background-color: #FFFFFF; border-color: #CBD5E1;">
+                  <option value="Morning" style="color: #0F172A; background-color: #FFFFFF;">Morning</option>
+                  <option value="Afternoon" style="color: #0F172A; background-color: #FFFFFF;">Afternoon</option>
+                  <option value="Evening" style="color: #0F172A; background-color: #FFFFFF;">Evening</option>
+                  <option value="Anytime" style="color: #0F172A; background-color: #FFFFFF;">Anytime</option>
                 </select>
               </div>
 
               <div class="form-group mb-6">
-                <label class="form-label" for="message">Optional message</label>
-                <textarea id="message" name="message" class="form-textarea w-full p-3 border rounded" rows="3" placeholder="Any specific requirements..."></textarea>
+                <label class="form-label" for="message" style="font-weight: 600; color: #0F172A; display: block; margin-bottom: 0.5rem;">Optional message / specific requirements</label>
+                <textarea id="message" name="message" class="form-textarea w-full p-3 border rounded" rows="3" placeholder="Type any specific requirements, pre-existing conditions, or questions here..." style="color: #0F172A; background-color: #FFFFFF; border-color: #CBD5E1;"></textarea>
               </div>
 
               <div class="flex justify-between mt-6" style="display: flex; justify-content: space-between;">
@@ -132,7 +133,7 @@ export function render(params) {
             </div>
 
             <!-- Step 3: Summary Review -->
-            <div id="step-3" class="form-step hidden" style="display: none;">
+            <div id="step-3" class="form-step" style="display: none;">
               <h2 style="font-size: 1.5rem; margin-bottom: 1.5rem; color: var(--color-navy);">Review Your Details</h2>
               <div class="guidance-page__summary bg-gray-50 p-4 rounded mb-6" style="background: var(--color-bg); padding: 1.5rem; border-radius: 8px;" id="summaryContent">
                 <!-- Summary content inserted via JS -->
@@ -145,7 +146,7 @@ export function render(params) {
           </form>
 
           <!-- Step 4: Success -->
-          <div id="step-4" class="guidance-success hidden text-center" style="display: none; padding: 2rem 0;">
+          <div id="step-4" class="guidance-success text-center" style="display: none; padding: 2rem 0;">
             <div style="color: var(--color-success); margin-bottom: 1.5rem;">
               <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
             </div>
@@ -216,6 +217,9 @@ export function mount(params) {
     if (State.addEnquiry) {
       State.addEnquiry(data);
     }
+
+    // Send to Google Sheet
+    sendLeadToGoogleSheet(data);
     
     // Hide form, show success
     form.style.display = 'none';
@@ -291,7 +295,7 @@ export function mount(params) {
       const val = formData.get(f.key);
       let displayVal = val || 'Not specified';
       if (f.key === 'planInterest' && val) {
-        const p = plans.find(plan => plan.id === val);
+        const p = plans.find(plan => plan.slug === val || plan.id === val);
         if (p) displayVal = p.name;
       }
       html += `
