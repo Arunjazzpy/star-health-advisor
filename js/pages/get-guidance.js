@@ -4,6 +4,7 @@ import { State } from '../state.js';
 import { Router } from '../router.js';
 import { isValidEmail, isValidPhone, isRequired, isValidName, showFieldError, clearFieldError, clearAllErrors } from '../utils/validation.js';
 import { sendLeadToGoogleSheet } from '../utils/sheets.js';
+import { sendLeadToBackend } from '../utils/api.js';
 
 let currentStep = 1;
 const totalSteps = 3;
@@ -218,8 +219,9 @@ export function mount(params) {
       State.addEnquiry(data);
     }
 
-    // Send to Google Sheet
+    // Send to Google Sheet & MySQL Backend
     sendLeadToGoogleSheet(data);
+    sendLeadToBackend(data);
     
     // Hide form, show success
     form.style.display = 'none';
